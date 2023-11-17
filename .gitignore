@@ -1,3 +1,4 @@
 *.swp
 Assignment/build*
 Assignment/*/Downloads
+**.pro.user
