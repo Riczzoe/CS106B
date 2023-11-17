@@ -1,15 +1,65 @@
 #include "HumanPyramids.h"
 #include "error.h"
+#include "grid.h"
 using namespace std;
+
+bool outOfBound(int row, int col) {
+    return row < 0 || col > row;
+}
+
+double weightOnBackOfRecursion(Grid<double>& table, int row, int col);
+
+double getWeightFromTable(Grid<double>& table, int row, int col) {
+    double weight;
+
+    if (table.get(row , col) != 0) {
+        return table.get(row, col);
+    }
+    weight = weightOnBackOfRecursion(table, row, col);
+    table.set(row, col, weight);
+    return weight;
+}
 
 /* TODO: Refer to HumanPyramids.h for more information about what this function should do.
  * Then, delete this comment.
  */
+
+double weightOnBackOfRecursion(Grid<double>& table, int row, int col) {
+    int newCol;
+    double weight, wt1, wt2;
+
+    if (outOfBound(row, col)) {
+        error("Out of bounds.");
+    }
+    if (row == 0) {
+        return 0;
+    }
+    if (table.get(row, col) != 0) {
+        return table.get(row, col);
+    }
+
+    if (col == 0 || col == row) {
+        newCol = col == 0 ? 0 : row - 1;
+        weight = getWeightFromTable(table, row - 1, newCol);
+        weight = weight / 2 + 80;
+        table.set(row, col, weight);
+        return weight;
+    }
+
+    wt1 = getWeightFromTable(table, row - 1, col);
+    wt2 = getWeightFromTable(table, row - 1, col - 1);
+    weight =(wt1 + wt2) / 2 + 160;
+    table.set(row, col, weight);
+    return weight;
+}
+
 double weightOnBackOf(int row, int col) {
-    /* TODO: Delete the next few lines and implement this function. */
-    (void) row;
-    (void) col;
-    return 0;
+    if (outOfBound(row, col)) {
+        error("Out of bounds.");
+    }
+    Grid<double> table(row + 1, col + 1, 0);
+
+    return weightOnBackOfRecursion(table, row, col);
 }
 
 
@@ -19,21 +69,15 @@ double weightOnBackOf(int row, int col) {
 /* * * * * * Test Cases * * * * * */
 #include "GUI/SimpleTest.h"
 
-/* TODO: Add your own tests here. You know the drill - look for edge cases, think about
- * very small and very large cases, etc.
- */
+STUDENT_TEST("Milestone 1: Check Person M from the handout.") {
+    /* Person M is located at row 4, column 2. */
+    EXPECT_EQUAL(weightOnBackOf(4, 2), 500);
+}
 
-
-
-
-
-
-
-
-
-
-
-
+STUDENT_TEST("Milestone 1: Check Person A from the handout.") {
+    /* Person M is located at row 0, column 0. */
+    EXPECT_EQUAL(weightOnBackOf(0, 0), 0);
+}
 
 
 /* * * * * * Test cases from the starter files below this point. * * * * * */
@@ -54,9 +98,6 @@ PROVIDED_TEST("Milestone 2: Memoization is implemented (should take under a seco
      * line immediately after this one - the one that starts with SHOW_ERROR - once
      * you have implemented memoization to test whether it works correctly.
      */
-    SHOW_ERROR("This test is configured to always fail until you delete this line from\n         HumanPyramids.cpp. Once you have implemented memoization and want\n         to check whether it works correctly, remove the indicated line.");
-
-    /* Do not delete anything below this point. :-) */
 
     /* This will take a LONG time to complete if memoization isn't implemented.
      * We're talking "heat death of the universe" amounts of time. :-)
