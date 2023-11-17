@@ -1,19 +1,56 @@
 #include "RisingTides.h"
+#include "queue.h"
 using namespace std;
+
+Vector<GridLocation> adjacentSquare(const Grid<double>& terrain,
+                                    const GridLocation& loc) {
+    Vector<GridLocation> adjs;
+    int row = loc.row,
+        col = loc.col;
+    pair<int, int> directions[4] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    for (pair p : directions) {
+        int newRow = row + p.first;
+        int newCol = col + p.second;
+        if (terrain.inBounds(newRow, newCol)) {
+            adjs.add({newRow, newCol});
+        }
+    }
+
+    return adjs;
+}
 
 Grid<bool> floodedRegionsIn(const Grid<double>& terrain,
                             const Vector<GridLocation>& sources,
                             double height) {
-    /* TODO: Delete this line and the next four lines, then implement this function. */
-    (void) terrain;
-    (void) sources;
-    (void) height;
-    return {};
+    Queue<GridLocation> floodSquare;
+    Grid<bool> isFlood(terrain.numRows(), terrain.numCols());
+    GridLocation l;
+    Vector<GridLocation> adjs;
+
+    isFlood.fill(false);
+    for (GridLocation loc : sources) {
+        if (terrain.inBounds(loc) && (terrain.get(loc) < height)) {
+            isFlood.set(loc, true);
+            floodSquare.enqueue(loc);
+        }
+    }
+
+    while (!floodSquare.isEmpty()) {
+        l = floodSquare.dequeue();
+        adjs = adjacentSquare(terrain, l);
+
+        for (GridLocation loc : adjs) {
+            if (!isFlood.get(loc) && terrain.get(loc) < height) {
+                isFlood.set(loc, true);
+                floodSquare.enqueue(loc);
+            }
+        }
+    }
+    return isFlood;
 }
 
 
-
-/***** Test Cases Below This Point *****/
 #include "GUI/SimpleTest.h"
 PROVIDED_TEST("Nothing gets wet if there are no water sources.") {
     Grid<double> world = {

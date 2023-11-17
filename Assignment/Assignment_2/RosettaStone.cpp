@@ -97,7 +97,6 @@ string guessLanguageOf(const Map<string, double>& textProfile,
     for (Corpus corpu : corpora) {
         pq.enqueue(corpu.name, cosineSimilarityOf(textProfile, corpu.profile));
     }
-
     size = pq.size();
     for (i = 0; i < size - 1; i++) {
         pq.dequeue();
@@ -107,17 +106,6 @@ string guessLanguageOf(const Map<string, double>& textProfile,
 }
 
 
-
-
-/* * * * *   Test Cases Below This Point   * * * * */
-
-
-
-
-
-
-
-/* * * * *   Provided Tests Below This Point   * * * * */
 PROVIDED_TEST("kGramsIn works when the text length exactly matches the k-gram length.") {
     Map<string, double> expected = {
         { "^_^", 1 }
