@@ -110,6 +110,11 @@ private:
      * TODO: Delete this comment before submitting.
      */
 
+    void expand(int newSize);
+    void sink(int k);
+    void swim(int k);
+    void exch(int i, int j);
+    bool less(int i, int j);
 
 
     /* By default, C++ will let you copy objects. The problem is that the default copy

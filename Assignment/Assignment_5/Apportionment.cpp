@@ -13,6 +13,7 @@ Map<string, int> apportion(const Map<string, int>& populations, int numSeats) {
 #include "GUI/SimpleTest.h"
 #include "Utilities/CSV.h"
 
+
 PROVIDED_TEST("Each state gets at least one seat.") {
     /* Fall 2020 */
     Map<string, int> populations = {

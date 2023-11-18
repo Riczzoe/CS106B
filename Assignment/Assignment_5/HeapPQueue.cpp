@@ -2,36 +2,96 @@
 using namespace std;
 
 HeapPQueue::HeapPQueue() {
-    /* TODO: Implement this. */
+    elems = new DataPoint[INITIAL_SIZE + 1];
+    allocatedSize = INITIAL_SIZE;
 }
 
 HeapPQueue::~HeapPQueue() {
-    /* TODO: Implement this. */
+    delete[] elems;
 }
 
 int HeapPQueue::size() const {
-    /* TODO: Delete the next line and implement this. */
-    return 0;
+    return logicalSize;
 }
 
 bool HeapPQueue::isEmpty() const {
-    /* TODO: Delete the next line and implement this. */
-    return 0;
+    return logicalSize == 0;
 }
 
 void HeapPQueue::enqueue(const DataPoint& data) {
-    /* TODO: Delete the next line and implement this. */
-    (void) data;
+    elems[++logicalSize] = data;
+    swim(logicalSize);
+
+    if (logicalSize  == allocatedSize) {
+        expand(allocatedSize * 2);
+    }
 }
 
 DataPoint HeapPQueue::peek() const {
-    /* TODO: Delete the next line and implement this. */
-    return {};
+    if (logicalSize == 0) {
+        error("No elems");
+    }
+    return elems[1];
 }
 
 DataPoint HeapPQueue::dequeue() {
-    /* TODO: Delete the next line and implement this. */
-    return {};
+    if (logicalSize == 0) {
+        error("No elems.");
+    }
+
+    DataPoint res = elems[1];
+    elems[1] = elems[logicalSize];
+    logicalSize--;
+    sink(1);
+
+    if (logicalSize > 0 && logicalSize == allocatedSize / 4) {
+        expand(allocatedSize / 2);
+    }
+    return res;
+}
+
+void HeapPQueue::expand(int newSize) {
+    DataPoint *newElems = new DataPoint[newSize + 1];
+
+    for (int i = 1; i <= logicalSize; i++) {
+        newElems[i] = elems[i];
+    }
+
+    delete[] elems;
+    elems = newElems;
+    allocatedSize = newSize;
+}
+
+bool HeapPQueue::less(int i, int j) {
+    return elems[i].weight < elems[j].weight;
+}
+
+void HeapPQueue::exch(int i, int j) {
+    DataPoint temp = elems[i];
+    elems[i] = elems[j];
+    elems[j] = temp;
+}
+
+void HeapPQueue::sink(int k) {
+    while (2 * k <= logicalSize) {
+        int temp = 2 * k;
+        if (temp < logicalSize && less(temp + 1, temp)) {
+            temp++;
+        }
+
+        if (less(k, temp)) {
+            break;
+        }
+        exch(k, temp);
+        k = temp;
+    }
+}
+
+void HeapPQueue::swim(int k) {
+    while (k > 1 && less(k, k / 2)) {
+        exch(k, k / 2);
+        k = k / 2;
+    }
 }
 
 
