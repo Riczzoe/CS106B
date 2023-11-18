@@ -6,7 +6,6 @@ string toProtein(const string& rna, const Map<string, char>& codonMap) {
     if (rna.length() % 3 != 0) {
         error("RNA string has a bad length.");
     }
-
     if (rna.length() == 0) {
         return "";
     }

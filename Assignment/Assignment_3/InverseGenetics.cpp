@@ -1,14 +1,46 @@
 #include "InverseGenetics.h"
 using namespace std;
 
+Map<char, Set<string>> getAminoAcidsMap(const Map<string, char>& codonMap) {
+    Map<char, Set<string>> aminoAcidsMap;
+    char key;
+    for (string s : codonMap) {
+        key = codonMap.get(s);
+        aminoAcidsMap[key].add(s);
+    }
+    return aminoAcidsMap;
+}
+
+void allRNASRecursion(const string& protein,
+             const Map<char, Set<string>>& aminoAcidsMap,
+             Set<string>& allRNAs,
+             string codon) {
+    if (protein.length() == 0) {
+        allRNAs.add(codon);
+        return;
+    }
+
+    Set<string> codonsOfAA = aminoAcidsMap[protein[0]];
+    for (string s : codonsOfAA) {
+        allRNASRecursion(protein.substr(1), aminoAcidsMap, allRNAs, codon + s);
+    }
+}
+
 Set<string> allRNAStrandsFor(const string& protein,
                              const Map<string, char>& codonMap) {
-    /* TODO: Delete this comment and the next few lines, then
-     * implement this function.
-     */
-    (void) protein;
-    (void) codonMap;
-    return {};
+    Map<char, Set<string>> aminoAcidsMap;
+    Set<string> allRNAs;
+    int i, strlen;
+
+    aminoAcidsMap = getAminoAcidsMap(codonMap);
+    strlen = protein.length();
+    for (i = 0; i < strlen; i++) {
+        if (!aminoAcidsMap.containsKey(protein[i])) {
+            return {};
+        }
+    }
+    allRNASRecursion(protein, aminoAcidsMap, allRNAs, "");
+    return allRNAs;
 }
 
 /* * * * * Test Cases Below This Point * * * * */
