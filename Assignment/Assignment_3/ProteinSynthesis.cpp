@@ -2,12 +2,20 @@
 using namespace std;
 
 string toProtein(const string& rna, const Map<string, char>& codonMap) {
-    /* TODO: Delete this comment and the next few lines, then implement
-     * this function.
-     */
-    (void) rna;
-    (void) codonMap;
-    return {};
+    string threeLetter;
+    if (rna.length() % 3 != 0) {
+        error("RNA string has a bad length.");
+    }
+
+    if (rna.length() == 0) {
+        return "";
+    }
+
+    threeLetter = rna.substr(0, 3);
+    if (!codonMap.containsKey(threeLetter)) {
+        error("RNA string has bad codon.");
+    }
+    return codonMap.get(threeLetter) + toProtein(rna.substr(3), codonMap);
 }
 
 /* * * * * Test Cases Below This Point * * * * */
