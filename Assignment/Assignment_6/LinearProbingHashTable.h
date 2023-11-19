@@ -84,14 +84,9 @@ private:
      */
     Slot* elems = nullptr;
 
-    /* TODO: Add any private member variables, member functions, or member
-     * types that you'd like. You're welcome to implement this type however
-     * you'd like, provided that you do all your own memory management, you
-     * don't use any container types (e.g. Vector, HashSet, etc.), and that
-     * you use linear probing with tombstones.
-     *
-     * TODO: Delete this comment before submitting.
-     */
+    HashFunction<std::string> hashFn;
+    int allocatedSize;
+    int logicalSize;
 
 
 
