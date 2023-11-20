@@ -224,20 +224,6 @@ string decompress(HuffmanResult& file) {
 /* * * * * * Test Cases Below This Point * * * * * */
 #include "GUI/SimpleTest.h"
 
-/* TODO: Add your own custom tests here! */
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* * * * * Provided Tests Below This Point * * * * */
 #include <limits>
 #include "set.h"
