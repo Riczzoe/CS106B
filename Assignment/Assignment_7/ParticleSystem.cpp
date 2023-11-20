@@ -1,48 +1,133 @@
 #include "ParticleSystem.h"
+#include "DrawParticle.h"
+#include "random.h"
+
 using namespace std;
 
 ParticleSystem::ParticleSystem() {
-    /* TODO: Delete this comment and implement this function. */
+    head = nullptr;
+    tail = nullptr;
+    num = 0;
 }
 
 ParticleSystem::~ParticleSystem() {
-    /* TODO: Delete this comment and implement this function. */
+    if (head != nullptr) {
+        ParticleCell *prev = nullptr;
+        ParticleCell *curr = head;
+
+        while (curr != nullptr) {
+            prev = curr;
+            curr = curr->next;
+            delete prev;
+        }
+    }
 }
 
 int ParticleSystem::numParticles() const {
-    /* TODO: Delete this comment and the lines below, then
-     * implement this function.
-     */
-    return -1;
+    return num;
+}
+
+bool ParticleSystem::isNeedCull(const Particle& data) {
+    return data.lifetime < 0 ||
+           data.x < 0 || data.x >= SCENE_WIDTH ||
+           data.y < 0 || data.y >= SCENE_HEIGHT;
 }
 
 void ParticleSystem::add(const Particle& data) {
-    /* TODO: Delete this comment and the lines below, then
-     * implement this function.
-     */
-    (void) data;
+    if (isNeedCull(data)) {
+        return ;
+    }
+
+    ParticleCell *newCell = new ParticleCell;
+    newCell->particle = data;
+    newCell->next = nullptr;
+
+    if (tail == nullptr) {
+        newCell->prev = nullptr;
+        head = newCell;
+    } else {
+        tail->next = newCell;
+        newCell->prev = tail;
+    }
+
+    tail = newCell;
+    num++;
 }
 
 void ParticleSystem::drawParticles() const {
-    /* TODO: Delete this comment and implement this function. */
+    ParticleCell *curr = head;
+
+    while (curr != nullptr) {
+        Particle particle = curr->particle;
+        drawParticle(particle.x, particle.y, particle.color);
+        curr = curr->next;
+    }
+}
+
+void ParticleSystem::updateParticle(Particle& particle) {
+    particle.x += particle.dx;
+    particle.y += particle.dy;
+    particle.lifetime--;
+
+    if (particle.type == ParticleType::BALLISTIC ||
+        particle.type == ParticleType::FIREWORK) {
+        particle.dy++;
+    }
+}
+
+bool ParticleSystem::isFireWork(const Particle& data) {
+    return data.type == ParticleType::FIREWORK && data.lifetime < 0 &&
+           !(data.x < 0 || data.x >= SCENE_WIDTH ||
+             data.y < 0 || data.y >= SCENE_HEIGHT);
+}
+
+void ParticleSystem::explodes(const Particle& data) {
+    Color newColor = Color::random();
+    for (int i = 0; i < 50; i++) {
+        Particle newParticle;
+        newParticle.color = newColor;
+        newParticle.x = data.x;
+        newParticle.y = data.y;
+        newParticle.dx = randomInteger(-3, 3);
+        newParticle.dy = randomInteger(-3, 3);
+        newParticle.lifetime = randomInteger(2, 10);
+        add(newParticle);
+    }
 }
 
 void ParticleSystem::moveParticles() {
-    /* TODO: Delete this comment and implement this function. */
+    ParticleCell *curr = head;
+
+    while (curr!= nullptr) {
+        updateParticle(curr->particle);
+
+        if (isNeedCull(curr->particle)) {
+            ParticleCell *needDelete = curr;
+            if (isFireWork(curr->particle)) {
+                explodes(curr->particle);
+            }
+            if (curr->prev != nullptr) {
+                curr->prev->next = curr->next;
+            }
+            if (curr->next != nullptr) {
+                curr->next->prev = curr->prev;
+            }
+            if (curr == head) {
+                head = curr->next;
+            }
+            if (curr == tail) {
+                tail = curr->prev;
+            }
+            curr = curr->next;
+            delete needDelete;
+            num--;
+        } else {
+            curr= curr->next;
+        }
+    }
 }
 
 /* * * * * Test Cases Below This Point * * * * */
-
-/* TODO: Some milestones of this assignment will require you to add your own
- * test cases. Delete this comment and put those tests here.
- */
-
-
-
-
-
-
-
 
 /* * * * * Provided Tests Below This Point * * * * */
 

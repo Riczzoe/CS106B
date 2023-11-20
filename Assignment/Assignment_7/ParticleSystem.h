@@ -59,9 +59,13 @@ private:
     /* TODO: Add any new member variables or helper functions here. Make sure
      * to delete this comment before submitting.
      */
+    ParticleCell *tail;
+    int num;
 
-
-
+    void updateParticle(Particle& particle);
+    bool isNeedCull(const Particle& data);
+    bool isFireWork(const Particle& data);
+    void explodes(const Particle& data);
     /* Allows SimpleTest to peek inside the ParticleSystem type. */
     ALLOW_TEST_ACCESS();
 };

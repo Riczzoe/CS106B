@@ -5,8 +5,8 @@ using namespace std;
 /* Type representing a doubly-linked list of strings. */
 struct Cell {
     string value;
-    Cell* next;
-    Cell* prev;
+    Cell *next;
+    Cell *prev;
 
     TRACK_ALLOCATIONS_OF(Cell); // Helps SimpleTest find memory leaks
 };
@@ -15,30 +15,43 @@ struct Cell {
  * be implemented iteratively, rather than recursively.
  */
 int lengthOf(Cell* list) {
-    /* TODO: Delete this comment and the next two lines, then implement this
-     * function.
-     */
-    (void) list;
-    return -1;
+    int len = 0;
+    Cell **listp = &list;
+
+    while (*listp != nullptr) {
+        listp = &((*listp)->next);
+        len++;
+    }
+
+    return len;
 }
 
 /* Frees all memory used by the given doubly-linked list. This function must
  * be implemented iteratively, rather than recursively.
  */
 void freeDoublyLinkedList(Cell* list) {
-    /* TODO: Delete this comment and the next line, then implement this
-     * function.
-     */
-    (void) list;
+    Cell *prev = nullptr;
+    Cell *curr = list;
+
+    while (curr != nullptr) {
+        prev = curr;
+        curr = curr->next;
+        delete prev;
+    }
 }
 
 /* Adds the given value to the front of the specified doubly-linked list. */
 void prependTo(Cell*& list, const string& value) {
-    /* TODO: Delete this comment and the next two lines, then implement this
-     * function.
-     */
-    (void) list;
-    (void) value;
+    Cell* newCell = new Cell;
+    newCell->value = value;
+    newCell->prev = nullptr;
+    if (list == nullptr) {
+        newCell->next = nullptr;
+    } else {
+        newCell->next = list;
+        list->prev = newCell;
+    }
+    list = newCell;
 }
 
 /* * * * * Test Cases Below This Point * * * * */

@@ -1,34 +1,53 @@
 #include "Labyrinth.h"
+#include "map.h"
 using namespace std;
 
+bool canCastSpell(Map<Item, bool> isGetItem) {
+    if (isGetItem.isEmpty()) {
+        return false;
+    }
+    return isGetItem.size() == 3;
+}
+
+MazeCell* goNext(MazeCell* now, char direction) {
+    MazeCell* next = nullptr;
+    switch (direction) {
+    case 'N':
+        next = now->north;
+        break;
+    case 'S':
+        next = now->south;
+        break;
+    case 'E':
+        next = now->east;
+        break;
+    case 'W':
+        next = now->west;
+        break;
+    }
+
+    return next;
+}
+
 bool isPathToFreedom(MazeCell* start, const string& moves) {
-    /* TODO: Delete this comment and the next few lines, then implement
-     * this function.
-     */
-    (void) start;
-    (void) moves;
-    return false;
+    int steps = moves.length();
+    Map<Item, bool> isGetItem;
+
+    MazeCell* whereMe = start;
+    for (int i = 0; i <= steps && whereMe != nullptr; i++) {
+        if (whereMe->whatsHere != Item::NOTHING) {
+            isGetItem[whereMe->whatsHere] = true;
+        }
+        whereMe = goNext(whereMe, moves[i]);
+    }
+
+    return canCastSpell(isGetItem);
 }
 
 
 /* * * * * * Test Cases Below This Point * * * * * */
 #include "GUI/SimpleTest.h"
 #include "Demos/MazeGenerator.h"
-
-/* Optional: Add your own custom tests here! */
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* * * * * Provided Tests Below This Point * * * * */
 
