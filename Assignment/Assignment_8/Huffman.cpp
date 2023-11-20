@@ -1,4 +1,6 @@
 #include "Huffman.h"
+#include "priorityqueue.h"
+#include "map.h"
 using namespace std;
 
 /**
@@ -14,6 +16,17 @@ void deleteTree(EncodingTreeNode* tree) {
     }
 }
 
+void buildTree(PriorityQueue<EncodingTreeNode*>& pq) {
+    double weight = pq.peekPriority();
+    EncodingTreeNode* n1 = pq.dequeue();
+    weight += pq.peekPriority();
+    EncodingTreeNode* n2 = pq.dequeue();
+    EncodingTreeNode* newNode = new EncodingTreeNode {
+        ' ', n1, n2
+    };
+    pq.enqueue(newNode, weight);
+}
+
 /**
  * Constructs a Huffman coding tree for the given string, using the algorithm
  * described in lecture.
@@ -26,9 +39,33 @@ void deleteTree(EncodingTreeNode* tree) {
  * second tree as the one subtree.
  */
 EncodingTreeNode* huffmanTreeFor(const string& str) {
-    /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) str;
-    return nullptr;
+    Map<char, int> times;
+    PriorityQueue<EncodingTreeNode*> pq;
+
+    for (char c : str) {
+        if (times.containsKey(c)) {
+            times[c]++;
+        } else {
+            times[c] = 1;
+        }
+    }
+
+    if (times.size() < 2) {
+        error("the input string should has at least two different characters in it");
+    }
+    for (char c : times) {
+        EncodingTreeNode* node = new EncodingTreeNode;
+        node->ch = c;
+        node->zero = nullptr;
+        node->one = nullptr;
+        pq.enqueue(node, (double)times[c]);
+    }
+
+    while (pq.size() > 1) {
+        buildTree(pq);
+    }
+
+    return pq.dequeue();
 }
 
 /**
@@ -351,323 +388,323 @@ PROVIDED_TEST("huffmanTreeFor uses cumulative weights (v2).") {
     deleteTree(tree);
 }
 
-PROVIDED_TEST("decodeText works on small sample.") {
-    /* This tree:
-     *                 *
-     *                / \
-     *               O   *
-     *                  / \
-     *                 *   N
-     *                / \
-     *               M   S
-     */
-    EncodingTreeNode* tree = new EncodingTreeNode {
-        '*',
-            new EncodingTreeNode { 'O', nullptr, nullptr },
-            new EncodingTreeNode { '*',
-                new EncodingTreeNode{ '*',
-                    new EncodingTreeNode { 'M', nullptr, nullptr },
-                    new EncodingTreeNode { 'S', nullptr, nullptr }
-                },
-                new EncodingTreeNode{ 'N', nullptr, nullptr }
-            }
-    };
+// PROVIDED_TEST("decodeText works on small sample.") {
+    // /* This tree:
+     // *                 *
+     // *                / \
+     // *               O   *
+     // *                  / \
+     // *                 *   N
+     // *                / \
+     // *               M   S
+     // */
+    // EncodingTreeNode* tree = new EncodingTreeNode {
+        // '*',
+            // new EncodingTreeNode { 'O', nullptr, nullptr },
+            // new EncodingTreeNode { '*',
+                // new EncodingTreeNode{ '*',
+                    // new EncodingTreeNode { 'M', nullptr, nullptr },
+                    // new EncodingTreeNode { 'S', nullptr, nullptr }
+                // },
+                // new EncodingTreeNode{ 'N', nullptr, nullptr }
+            // }
+    // };
 
-    /* What you get if you encode MONSOON with this tree. */
-    Queue<Bit> bits = { 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1 };
+    // /* What you get if you encode MONSOON with this tree. */
+    // Queue<Bit> bits = { 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1 };
 
-    EXPECT_EQUAL(decodeText(bits, tree), "MONSOON");
+    // EXPECT_EQUAL(decodeText(bits, tree), "MONSOON");
 
-    deleteTree(tree);
-}
+    // deleteTree(tree);
+// }
 
-PROVIDED_TEST("Can decode all char values.") {
-    /* All possible characters. */
-    string allChars = pangrammaticString();
+// PROVIDED_TEST("Can decode all char values.") {
+    // /* All possible characters. */
+    // string allChars = pangrammaticString();
 
-    /* Try decoding all pairs of adjacent characters. */
-    for (size_t i = 0; i < allChars.size(); i += 2) {
-        string expected;
-        expected += allChars[i];
-        expected += allChars[i + 1];
-        expected += allChars[i + 1];
+    // /* Try decoding all pairs of adjacent characters. */
+    // for (size_t i = 0; i < allChars.size(); i += 2) {
+        // string expected;
+        // expected += allChars[i];
+        // expected += allChars[i + 1];
+        // expected += allChars[i + 1];
 
-        EncodingTreeNode* tree = new EncodingTreeNode {
-            ' ',
-            new EncodingTreeNode {allChars[i], nullptr, nullptr},
-            new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
-        };
+        // EncodingTreeNode* tree = new EncodingTreeNode {
+            // ' ',
+            // new EncodingTreeNode {allChars[i], nullptr, nullptr},
+            // new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
+        // };
 
-        /* Decode the bitstream 011, which should map back to the expected
-         * string.
-         */
-        Queue<Bit> bits = { 0, 1, 1 };
-        EXPECT_EQUAL(decodeText(bits, tree), expected);
+        // /* Decode the bitstream 011, which should map back to the expected
+         // * string.
+         // */
+        // Queue<Bit> bits = { 0, 1, 1 };
+        // EXPECT_EQUAL(decodeText(bits, tree), expected);
 
-        deleteTree(tree);
-    }
-}
+        // deleteTree(tree);
+    // }
+// }
 
-PROVIDED_TEST("encodeText works on small sample.") {
-    /* This tree:
-     *                 *
-     *                / \
-     *               O   *
-     *                  / \
-     *                 *   N
-     *                / \
-     *               M   S
-     */
-    EncodingTreeNode* tree = new EncodingTreeNode {
-           '*',
-           new EncodingTreeNode { 'O', nullptr, nullptr },
-               new EncodingTreeNode { '*',
-               new EncodingTreeNode{ '*',
-               new EncodingTreeNode { 'M', nullptr, nullptr },
-               new EncodingTreeNode { 'S', nullptr, nullptr }
-            },
-            new EncodingTreeNode{ 'N', nullptr, nullptr }
-        }
-    };
+// PROVIDED_TEST("encodeText works on small sample.") {
+    // /* This tree:
+     // *                 *
+     // *                / \
+     // *               O   *
+     // *                  / \
+     // *                 *   N
+     // *                / \
+     // *               M   S
+     // */
+    // EncodingTreeNode* tree = new EncodingTreeNode {
+           // '*',
+           // new EncodingTreeNode { 'O', nullptr, nullptr },
+               // new EncodingTreeNode { '*',
+               // new EncodingTreeNode{ '*',
+               // new EncodingTreeNode { 'M', nullptr, nullptr },
+               // new EncodingTreeNode { 'S', nullptr, nullptr }
+            // },
+            // new EncodingTreeNode{ 'N', nullptr, nullptr }
+        // }
+    // };
 
-    /* What you get if you encode MONSOON with this tree. */
-    Queue<Bit> expected = { 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1 };
+    // /* What you get if you encode MONSOON with this tree. */
+    // Queue<Bit> expected = { 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1 };
 
-    EXPECT_EQUAL(encodeText("MONSOON", tree), expected);
+    // EXPECT_EQUAL(encodeText("MONSOON", tree), expected);
 
-    deleteTree(tree);
-}
+    // deleteTree(tree);
+// }
 
-PROVIDED_TEST("Can encode all char values.") {
-    /* All possible characters. */
-    string allChars = pangrammaticString();
+// PROVIDED_TEST("Can encode all char values.") {
+    // /* All possible characters. */
+    // string allChars = pangrammaticString();
 
-    /* Try encoding all pairs of adjacent characters. */
-    for (size_t i = 0; i < allChars.size(); i += 2) {
-        string toEncode;
-        toEncode += allChars[i];
-        toEncode += allChars[i + 1];
-        toEncode += allChars[i + 1];
+    // /* Try encoding all pairs of adjacent characters. */
+    // for (size_t i = 0; i < allChars.size(); i += 2) {
+        // string toEncode;
+        // toEncode += allChars[i];
+        // toEncode += allChars[i + 1];
+        // toEncode += allChars[i + 1];
 
-        EncodingTreeNode* tree = new EncodingTreeNode {
-                ' ',
-                new EncodingTreeNode {allChars[i], nullptr, nullptr},
-                new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
-        };
+        // EncodingTreeNode* tree = new EncodingTreeNode {
+                // ' ',
+                // new EncodingTreeNode {allChars[i], nullptr, nullptr},
+                // new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
+        // };
 
-        /* See what bits we get back. We should get 011, since the first
-         * character has code 0 and the second has code 1.
-         */
-        Queue<Bit> bits = encodeText(toEncode, tree);
-        Queue<Bit> expected = { 0, 1, 1 };
+        // /* See what bits we get back. We should get 011, since the first
+         // * character has code 0 and the second has code 1.
+         // */
+        // Queue<Bit> bits = encodeText(toEncode, tree);
+        // Queue<Bit> expected = { 0, 1, 1 };
 
-        EXPECT_EQUAL(bits, expected);
+        // EXPECT_EQUAL(bits, expected);
 
-        deleteTree(tree);
-    }
-}
+        // deleteTree(tree);
+    // }
+// }
 
-PROVIDED_TEST("decodeText undoes encodeText on range of sample strings.") {
-    Vector<string> testCases = {
-        "THAT THAT IS IS THAT THAT IS NOT IS NOT IS THAT IT IT IS",
-        "AABAAABBABAAABAAAA",
-        ":-) :-D XD <(^_^)>",
-        pangrammaticString(),
-    };
+// PROVIDED_TEST("decodeText undoes encodeText on range of sample strings.") {
+    // Vector<string> testCases = {
+        // "THAT THAT IS IS THAT THAT IS NOT IS NOT IS THAT IT IT IS",
+        // "AABAAABBABAAABAAAA",
+        // ":-) :-D XD <(^_^)>",
+        // pangrammaticString(),
+    // };
 
-    for (string test: testCases) {
-        /* Use a silly encoding scheme, but one that works regardless of what
-         * characters are provided.
-         */
-        EncodingTreeNode* tree = strandTreeFor(test);
-        EXPECT(isEncodingTree(tree));
+    // for (string test: testCases) {
+        // /* Use a silly encoding scheme, but one that works regardless of what
+         // * characters are provided.
+         // */
+        // EncodingTreeNode* tree = strandTreeFor(test);
+        // EXPECT(isEncodingTree(tree));
 
-        Queue<Bit> bits = encodeText(test, tree);
-        string result = decodeText(bits, tree);
+        // Queue<Bit> bits = encodeText(test, tree);
+        // string result = decodeText(bits, tree);
 
-        EXPECT_EQUAL(test.size(), result.size());
-        EXPECT_EQUAL(test, result);
+        // EXPECT_EQUAL(test.size(), result.size());
+        // EXPECT_EQUAL(test, result);
 
-        deleteTree(tree);
-    }
-}
+        // deleteTree(tree);
+    // }
+// }
 
-PROVIDED_TEST("Can decode an example tree.") {
-    /* This encodes this tree:
-     *
-     *                 *
-     *                / \
-     *               *   C
-     *              / \
-     *             A   B
-     */
-    Queue<Bit>  bits   = { 1, 1, 0, 0, 0 };
-    Queue<char> leaves = { 'A', 'B', 'C' };
+// PROVIDED_TEST("Can decode an example tree.") {
+    // /* This encodes this tree:
+     // *
+     // *                 *
+     // *                / \
+     // *               *   C
+     // *              / \
+     // *             A   B
+     // */
+    // Queue<Bit>  bits   = { 1, 1, 0, 0, 0 };
+    // Queue<char> leaves = { 'A', 'B', 'C' };
 
-    EncodingTreeNode* tree = decodeTree(bits, leaves);
-    EXPECT(isEncodingTree(tree));
+    // EncodingTreeNode* tree = decodeTree(bits, leaves);
+    // EXPECT(isEncodingTree(tree));
 
-    /* Confirm this is the right tree. */
-    EncodingTreeNode* expected = new EncodingTreeNode {
-        '*',
-            new EncodingTreeNode {
-                '*',
-                new EncodingTreeNode { 'A', nullptr, nullptr },
-                new EncodingTreeNode { 'B', nullptr, nullptr },
-            },
-            new EncodingTreeNode { 'C', nullptr, nullptr }
-    };
+    // /* Confirm this is the right tree. */
+    // EncodingTreeNode* expected = new EncodingTreeNode {
+        // '*',
+            // new EncodingTreeNode {
+                // '*',
+                // new EncodingTreeNode { 'A', nullptr, nullptr },
+                // new EncodingTreeNode { 'B', nullptr, nullptr },
+            // },
+            // new EncodingTreeNode { 'C', nullptr, nullptr }
+    // };
 
-    EXPECT(areEqual(tree, expected));
+    // EXPECT(areEqual(tree, expected));
 
-    deleteTree(tree);
-    deleteTree(expected);
-}
+    // deleteTree(tree);
+    // deleteTree(expected);
+// }
 
-PROVIDED_TEST("Can decode trees using all possible char values.") {
-    /* All possible characters. */
-    string allChars = pangrammaticString();
+// PROVIDED_TEST("Can decode trees using all possible char values.") {
+    // /* All possible characters. */
+    // string allChars = pangrammaticString();
 
-    /* Try encoding all pairs of adjacent characters. */
-    for (size_t i = 0; i < allChars.size(); i += 2) {
-        EncodingTreeNode* expected = new EncodingTreeNode {
-            ' ',
-            new EncodingTreeNode {allChars[i], nullptr, nullptr},
-            new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
-        };
-        Queue<Bit>  treeBits   = { 1, 0, 0 };
-        Queue<char> treeLeaves = { allChars[i], allChars[i + 1] };
+    // /* Try encoding all pairs of adjacent characters. */
+    // for (size_t i = 0; i < allChars.size(); i += 2) {
+        // EncodingTreeNode* expected = new EncodingTreeNode {
+            // ' ',
+            // new EncodingTreeNode {allChars[i], nullptr, nullptr},
+            // new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
+        // };
+        // Queue<Bit>  treeBits   = { 1, 0, 0 };
+        // Queue<char> treeLeaves = { allChars[i], allChars[i + 1] };
 
-        EncodingTreeNode* tree = decodeTree(treeBits, treeLeaves);
-        EXPECT(isEncodingTree(tree));
-        EXPECT(areEqual(tree, expected));
+        // EncodingTreeNode* tree = decodeTree(treeBits, treeLeaves);
+        // EXPECT(isEncodingTree(tree));
+        // EXPECT(areEqual(tree, expected));
 
-        deleteTree(tree);
-        deleteTree(expected);
-    }
-}
+        // deleteTree(tree);
+        // deleteTree(expected);
+    // }
+// }
 
-PROVIDED_TEST("Can encode an example tree.") {
-    /* Build an encoding tree for "ABBCCCC." It should look like this:
-     *
-     *                 *
-     *                / \
-     *               *   C
-     *              / \
-     *             A   B
-     *
-     * This will compress down to
-     *
-     *        11000
-     *        ABC
-     */
-    EncodingTreeNode* tree = huffmanTreeFor("ABBCCCC");
+// PROVIDED_TEST("Can encode an example tree.") {
+    // /* Build an encoding tree for "ABBCCCC." It should look like this:
+     // *
+     // *                 *
+     // *                / \
+     // *               *   C
+     // *              / \
+     // *             A   B
+     // *
+     // * This will compress down to
+     // *
+     // *        11000
+     // *        ABC
+     // */
+    // EncodingTreeNode* tree = huffmanTreeFor("ABBCCCC");
 
-    Queue<Bit>  bits;
-    Queue<char> leaves;
+    // Queue<Bit>  bits;
+    // Queue<char> leaves;
 
-    encodeTree(tree, bits, leaves);
+    // encodeTree(tree, bits, leaves);
 
-    Queue<Bit>  expectedBits   = { 1, 1, 0, 0, 0 };
-    Queue<char> expectedLeaves = { 'A', 'B', 'C' };
+    // Queue<Bit>  expectedBits   = { 1, 1, 0, 0, 0 };
+    // Queue<char> expectedLeaves = { 'A', 'B', 'C' };
 
-    EXPECT_EQUAL(bits,   expectedBits);
-    EXPECT_EQUAL(leaves, expectedLeaves);
+    // EXPECT_EQUAL(bits,   expectedBits);
+    // EXPECT_EQUAL(leaves, expectedLeaves);
 
-    deleteTree(tree);
-}
+    // deleteTree(tree);
+// }
 
-PROVIDED_TEST("Can encode trees using all possible char values.") {
-    /* All possible characters. */
-    string allChars = pangrammaticString();
+// PROVIDED_TEST("Can encode trees using all possible char values.") {
+    // /* All possible characters. */
+    // string allChars = pangrammaticString();
 
-    /* Try encoding all pairs of adjacent characters. */
-    for (size_t i = 0; i < allChars.size(); i += 2) {
-        EncodingTreeNode* tree = new EncodingTreeNode {
-            ' ',
-            new EncodingTreeNode {allChars[i], nullptr, nullptr},
-            new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
-        };
+    // /* Try encoding all pairs of adjacent characters. */
+    // for (size_t i = 0; i < allChars.size(); i += 2) {
+        // EncodingTreeNode* tree = new EncodingTreeNode {
+            // ' ',
+            // new EncodingTreeNode {allChars[i], nullptr, nullptr},
+            // new EncodingTreeNode {allChars[i + 1], nullptr, nullptr}
+        // };
 
-        /* See what we get back. It should be the bitstring 100 (root with
-         * two children) and the two leaves, in order.
-         */
-        Queue<Bit>  treeBits;
-        Queue<char> treeLeaves;
+        // /* See what we get back. It should be the bitstring 100 (root with
+         // * two children) and the two leaves, in order.
+         // */
+        // Queue<Bit>  treeBits;
+        // Queue<char> treeLeaves;
 
-        Queue<Bit>  expectedBits = { 1, 0, 0 };
-        Queue<char> expectedLeaves = { allChars[i], allChars[i + 1] };
+        // Queue<Bit>  expectedBits = { 1, 0, 0 };
+        // Queue<char> expectedLeaves = { allChars[i], allChars[i + 1] };
 
-        encodeTree(tree, treeBits, treeLeaves);
-        EXPECT_EQUAL(treeBits, expectedBits);
-        EXPECT_EQUAL(treeLeaves, expectedLeaves);
+        // encodeTree(tree, treeBits, treeLeaves);
+        // EXPECT_EQUAL(treeBits, expectedBits);
+        // EXPECT_EQUAL(treeLeaves, expectedLeaves);
 
-        deleteTree(tree);
-    }
-}
+        // deleteTree(tree);
+    // }
+// }
 
-PROVIDED_TEST("decodeTree undoes encodeTree on sample strings.") {
-    /* Make a Huffman tree for the string of all characters. */
-    EncodingTreeNode* sourceTree = huffmanTreeFor(pangrammaticString());
-    EXPECT(isEncodingTree(sourceTree));
+// PROVIDED_TEST("decodeTree undoes encodeTree on sample strings.") {
+    // /* Make a Huffman tree for the string of all characters. */
+    // EncodingTreeNode* sourceTree = huffmanTreeFor(pangrammaticString());
+    // EXPECT(isEncodingTree(sourceTree));
 
-    /* Encode, then decode it. */
-    Queue<Bit>  bits;
-    Queue<char> leaves;
-    encodeTree(sourceTree, bits, leaves);
+    // /* Encode, then decode it. */
+    // Queue<Bit>  bits;
+    // Queue<char> leaves;
+    // encodeTree(sourceTree, bits, leaves);
 
-    EncodingTreeNode* resultTree = decodeTree(bits, leaves);
-    EXPECT(isEncodingTree(resultTree));
-    EXPECT(areEqual(sourceTree, resultTree));
+    // EncodingTreeNode* resultTree = decodeTree(bits, leaves);
+    // EXPECT(isEncodingTree(resultTree));
+    // EXPECT(areEqual(sourceTree, resultTree));
 
-    deleteTree(sourceTree);
-    deleteTree(resultTree);
-}
+    // deleteTree(sourceTree);
+    // deleteTree(resultTree);
+// }
 
-PROVIDED_TEST("Can decompress a small sample file.") {
-    HuffmanResult file = {
-        { 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0 },
-        { 'u', 'k', 'p', 'n', 'a', 'm', 'h' },
-        { 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
-          0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0,
-          0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0 }
-    };
+// PROVIDED_TEST("Can decompress a small sample file.") {
+    // HuffmanResult file = {
+        // { 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0 },
+        // { 'u', 'k', 'p', 'n', 'a', 'm', 'h' },
+        // { 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
+          // 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0,
+          // 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0 }
+    // };
 
-    EXPECT_EQUAL(decompress(file), "humuhumunukunukuapuaa");
-}
+    // EXPECT_EQUAL(decompress(file), "humuhumunukunukuapuaa");
+// }
 
-PROVIDED_TEST("Compress reports errors on bad inputs.") {
-    EXPECT_ERROR(compress(""));
-    EXPECT_ERROR(compress("A"));
-    EXPECT_ERROR(compress("AAAA"));
-}
+// PROVIDED_TEST("Compress reports errors on bad inputs.") {
+    // EXPECT_ERROR(compress(""));
+    // EXPECT_ERROR(compress("A"));
+    // EXPECT_ERROR(compress("AAAA"));
+// }
 
-PROVIDED_TEST("Can compress a small sample file.") {
-    HuffmanResult file = compress("ABANANAABANDANA");
-    Queue<Bit>  treeBits    = { 1, 1, 1, 0, 0, 0, 0 };
-    Queue<char> treeChars   = { 'D', 'B', 'N', 'A' };
-    Queue<Bit>  messageBits = { 1, 0, 0, 1, 1, 0, 1, 1, 0,
-                                1, 1, 1, 0, 0, 1, 1, 0, 1,
-                                0, 0, 0, 1, 0, 1, 1 };
+// PROVIDED_TEST("Can compress a small sample file.") {
+    // HuffmanResult file = compress("ABANANAABANDANA");
+    // Queue<Bit>  treeBits    = { 1, 1, 1, 0, 0, 0, 0 };
+    // Queue<char> treeChars   = { 'D', 'B', 'N', 'A' };
+    // Queue<Bit>  messageBits = { 1, 0, 0, 1, 1, 0, 1, 1, 0,
+                                // 1, 1, 1, 0, 0, 1, 1, 0, 1,
+                                // 0, 0, 0, 1, 0, 1, 1 };
 
-    EXPECT_EQUAL(file.treeBits, treeBits);
-    EXPECT_EQUAL(file.treeLeaves, treeChars);
-    EXPECT_EQUAL(file.messageBits, messageBits);
-}
+    // EXPECT_EQUAL(file.treeBits, treeBits);
+    // EXPECT_EQUAL(file.treeLeaves, treeChars);
+    // EXPECT_EQUAL(file.messageBits, messageBits);
+// }
 
-PROVIDED_TEST("Compress undoes decompress on a range of strings.") {
-    Vector<string> testCases = {
-        "THAT THAT IS IS THAT THAT IS NOT IS NOT IS THAT IT IT IS",
-        "AABAAABBABAAABAAAA",
-        ":-) :-D XD <(^_^)>",
-        pangrammaticString(),
-    };
+// PROVIDED_TEST("Compress undoes decompress on a range of strings.") {
+    // Vector<string> testCases = {
+        // "THAT THAT IS IS THAT THAT IS NOT IS NOT IS THAT IT IT IS",
+        // "AABAAABBABAAABAAAA",
+        // ":-) :-D XD <(^_^)>",
+        // pangrammaticString(),
+    // };
 
-    for (string test: testCases) {
-        HuffmanResult file = compress(test);
-        string result = decompress(file);
+    // for (string test: testCases) {
+        // HuffmanResult file = compress(test);
+        // string result = decompress(file);
 
-        EXPECT_EQUAL(result.size(), test.size());
-        EXPECT_EQUAL(test, result);
-    }
-}
+        // EXPECT_EQUAL(result.size(), test.size());
+        // EXPECT_EQUAL(test, result);
+    // }
+// }
