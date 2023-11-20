@@ -195,9 +195,13 @@ void encodeTree(EncodingTreeNode* tree, Queue<Bit>& bits, Queue<char>& leaves) {
  * fewer than two distinct characters in the input string.
  */
 HuffmanResult compress(const string& text) {
-    /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) text;
-    return {};
+    EncodingTreeNode* huffmanTree = huffmanTreeFor(text);
+    Queue<Bit> messageBits = encodeText(text, huffmanTree);
+    Queue<Bit> bits;
+    Queue<char> leaves;
+    encodeTree(huffmanTree, bits, leaves);
+    deleteTree(huffmanTree);
+    return HuffmanResult{bits, leaves, messageBits};
 }
 
 /**
@@ -211,9 +215,10 @@ HuffmanResult compress(const string& text) {
  * implementation of compress.
  */
 string decompress(HuffmanResult& file) {
-    /* TODO: Delete this comment and the next few lines, then implement this. */
-    (void) file;
-    return "";
+    EncodingTreeNode* huffmanTree = decodeTree(file.treeBits, file.treeLeaves);
+    string res = decodeText(file.messageBits, huffmanTree);
+    deleteTree(huffmanTree);
+    return res;
 }
 
 /* * * * * * Test Cases Below This Point * * * * * */
@@ -717,50 +722,50 @@ PROVIDED_TEST("decodeTree undoes encodeTree on sample strings.") {
     deleteTree(resultTree);
 }
 
-// PROVIDED_TEST("Can decompress a small sample file.") {
-    // HuffmanResult file = {
-        // { 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0 },
-        // { 'u', 'k', 'p', 'n', 'a', 'm', 'h' },
-        // { 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
-          // 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0,
-          // 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0 }
-    // };
+PROVIDED_TEST("Can decompress a small sample file.") {
+    HuffmanResult file = {
+        { 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0 },
+        { 'u', 'k', 'p', 'n', 'a', 'm', 'h' },
+        { 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1,
+          0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0,
+          0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0 }
+    };
 
-    // EXPECT_EQUAL(decompress(file), "humuhumunukunukuapuaa");
-// }
+    EXPECT_EQUAL(decompress(file), "humuhumunukunukuapuaa");
+}
 
-// PROVIDED_TEST("Compress reports errors on bad inputs.") {
-    // EXPECT_ERROR(compress(""));
-    // EXPECT_ERROR(compress("A"));
-    // EXPECT_ERROR(compress("AAAA"));
-// }
+PROVIDED_TEST("Compress reports errors on bad inputs.") {
+    EXPECT_ERROR(compress(""));
+    EXPECT_ERROR(compress("A"));
+    EXPECT_ERROR(compress("AAAA"));
+}
 
-// PROVIDED_TEST("Can compress a small sample file.") {
-    // HuffmanResult file = compress("ABANANAABANDANA");
-    // Queue<Bit>  treeBits    = { 1, 1, 1, 0, 0, 0, 0 };
-    // Queue<char> treeChars   = { 'D', 'B', 'N', 'A' };
-    // Queue<Bit>  messageBits = { 1, 0, 0, 1, 1, 0, 1, 1, 0,
-                                // 1, 1, 1, 0, 0, 1, 1, 0, 1,
-                                // 0, 0, 0, 1, 0, 1, 1 };
+PROVIDED_TEST("Can compress a small sample file.") {
+    HuffmanResult file = compress("ABANANAABANDANA");
+    Queue<Bit>  treeBits    = { 1, 1, 1, 0, 0, 0, 0 };
+    Queue<char> treeChars   = { 'D', 'B', 'N', 'A' };
+    Queue<Bit>  messageBits = { 1, 0, 0, 1, 1, 0, 1, 1, 0,
+                                1, 1, 1, 0, 0, 1, 1, 0, 1,
+                                0, 0, 0, 1, 0, 1, 1 };
 
-    // EXPECT_EQUAL(file.treeBits, treeBits);
-    // EXPECT_EQUAL(file.treeLeaves, treeChars);
-    // EXPECT_EQUAL(file.messageBits, messageBits);
-// }
+    EXPECT_EQUAL(file.treeBits, treeBits);
+    EXPECT_EQUAL(file.treeLeaves, treeChars);
+    EXPECT_EQUAL(file.messageBits, messageBits);
+}
 
-// PROVIDED_TEST("Compress undoes decompress on a range of strings.") {
-    // Vector<string> testCases = {
-        // "THAT THAT IS IS THAT THAT IS NOT IS NOT IS THAT IT IT IS",
-        // "AABAAABBABAAABAAAA",
-        // ":-) :-D XD <(^_^)>",
-        // pangrammaticString(),
-    // };
+PROVIDED_TEST("Compress undoes decompress on a range of strings.") {
+    Vector<string> testCases = {
+        "THAT THAT IS IS THAT THAT IS NOT IS NOT IS THAT IT IT IS",
+        "AABAAABBABAAABAAAA",
+        ":-) :-D XD <(^_^)>",
+        pangrammaticString(),
+    };
 
-    // for (string test: testCases) {
-        // HuffmanResult file = compress(test);
-        // string result = decompress(file);
+    for (string test: testCases) {
+        HuffmanResult file = compress(test);
+        string result = decompress(file);
 
-        // EXPECT_EQUAL(result.size(), test.size());
-        // EXPECT_EQUAL(test, result);
-    // }
-// }
+        EXPECT_EQUAL(result.size(), test.size());
+        EXPECT_EQUAL(test, result);
+    }
+}
